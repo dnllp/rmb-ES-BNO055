@@ -22,7 +22,22 @@ const char *Motion::stateName(State s) {
 
 void Motion::begin(const Hw &hw) {
   hw_ = hw;
+  pinMode(hw_.enPin, OUTPUT);
   brakeAll();
+  enableMotors(false);  // desactivados hasta la primera primitiva
+}
+
+void Motion::enableMotors(bool on) {
+  digitalWrite(hw_.enPin, on ? HIGH : LOW);
+  enabled_ = on;
+}
+
+void Motion::release() {
+  portENTER_CRITICAL(&mux_);
+  pending_ = makeCommand(Kind::RELEASE, 0, 0, 0, 0);
+  hasPending_ = true;
+  issued_++;
+  portEXIT_CRITICAL(&mux_);
 }
 
 // ---------------------------------------------------------------- comandos
@@ -113,14 +128,13 @@ Motion::Telemetry Motion::telemetry() const {
 void Motion::applyCommand(const Command &c) {
   switch (c.kind) {
     case Kind::EMERGENCY:
-      hw_.ml->brake();
-      hw_.mr->brake();
-      delay(20);  // un instante de freno antes de soltar
-      hw_.ml->disable();
-      hw_.mr->disable();
+    case Kind::RELEASE:
+      brakeAll();
+      if (enabled_) delay(20);  // un instante de freno activo antes de soltar
+      enableMotors(false);
       dutyL_ = dutyR_ = 0;
       kind_ = Kind::NONE;
-      state_ = State::IDLE;
+      if (c.kind == Kind::EMERGENCY || state_ != State::FAULT) state_ = State::IDLE;
       return;
     case Kind::STOP:
       brakeAll();
@@ -144,6 +158,7 @@ void Motion::applyCommand(const Command &c) {
         dutyR_ = clampf(c.b, -1, 1);
         openLoopMs_ = c.ms;
       }
+      enableMotors(true);  // EN alto: el freno activo y el PWM ya funcionan
       brakeAll();
       state_ = State::WAIT_STILL;  // nunca invertir el sentido con la rueda girando
       settleT0_ = millis();

@@ -9,10 +9,12 @@
 // ---------------------------------------------------------------- Motores (BTS7960 / IBT-2)
 constexpr int PIN_L_RPWM = 25;  // motor izquierdo, adelante
 constexpr int PIN_L_LPWM = 26;  // motor izquierdo, atrás
-constexpr int PIN_L_EN = 27;    // R_EN + L_EN unidos, pull-down de 10 kΩ
 constexpr int PIN_R_RPWM = 16;  // motor derecho, adelante
 constexpr int PIN_R_LPWM = 17;  // motor derecho, atrás
-constexpr int PIN_R_EN = 13;    // R_EN + L_EN unidos, pull-down de 10 kΩ
+// Un solo EN para los dos puentes (R_EN y L_EN de ambos módulos unidos al GPIO 4).
+// Alto = motores activos; bajo = desactivados (rueda libre). Pull-down de 10 kΩ recomendado.
+// La velocidad se controla con el PWM de RPWM/LPWM; EN no lleva PWM.
+constexpr int PIN_MOTORS_EN = 4;
 
 constexpr uint32_t PWM_FREQ_HZ = 20000;  // 20 kHz, inaudible
 constexpr uint8_t PWM_BITS = 10;         // 0..1023

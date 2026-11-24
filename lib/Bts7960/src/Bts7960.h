@@ -1,11 +1,12 @@
 #pragma once
-// Un módulo BTS7960 (IBT-2): PWM a 20 kHz, sentido y freno activo. (Los pines IS no se usan.)
+// Un módulo BTS7960 (IBT-2): PWM a 20 kHz en RPWM/LPWM (velocidad y sentido) y freno activo.
+// El pin EN es compartido por los dos puentes y lo maneja Motion (enableMotors). Los pines IS no se usan.
 #include <Arduino.h>
 
 class Bts7960 {
  public:
   struct Pins {
-    int rpwm, lpwm, en;
+    int rpwm, lpwm;
     uint8_t chR, chL;
   };
 
@@ -13,8 +14,6 @@ class Bts7960 {
     p_ = p;
     invert_ = invert;
     maxDuty_ = (1u << bits) - 1;
-    pinMode(p_.en, OUTPUT);
-    digitalWrite(p_.en, LOW);  // apagado hasta que se pida
     ledcSetup(p_.chR, freqHz, bits);
     ledcSetup(p_.chL, freqHz, bits);
     ledcAttachPin(p_.rpwm, p_.chR);
@@ -29,7 +28,6 @@ class Bts7960 {
     if (duty < -1) duty = -1;
     if (invert_) duty = -duty;
     uint32_t d = (uint32_t)(fabsf(duty) * maxDuty_ + 0.5f);
-    digitalWrite(p_.en, HIGH);
     if (duty >= 0) {
       ledcWrite(p_.chL, 0);
       ledcWrite(p_.chR, d);
@@ -41,22 +39,12 @@ class Bts7960 {
     braking_ = false;
   }
 
-  // Freno activo: los dos lados bajos conducen (RPWM = LPWM = 0 con EN alto).
+  // Freno activo: los dos lados bajos conducen (RPWM = LPWM = 0). Solo frena si EN está en alto.
   void brake() {
     ledcWrite(p_.chR, 0);
     ledcWrite(p_.chL, 0);
-    digitalWrite(p_.en, HIGH);
     duty_ = 0;
     braking_ = true;
-  }
-
-  // Desactiva el puente (rueda libre). Lo usa el paro de emergencia tras frenar.
-  void disable() {
-    ledcWrite(p_.chR, 0);
-    ledcWrite(p_.chL, 0);
-    digitalWrite(p_.en, LOW);
-    duty_ = 0;
-    braking_ = false;
   }
 
   float duty() const { return duty_; }

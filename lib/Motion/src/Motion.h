@@ -17,6 +17,7 @@ class Motion {
     SingleEncoder *el, *er;
     Imu *imu;
     Pose *pose;
+    int enPin;  // EN compartido de los dos BTS7960
   };
 
   struct Telemetry {
@@ -41,6 +42,8 @@ class Motion {
   void openLoop(float dutyL, float dutyR, uint32_t ms);  // prueba de motores (curva PWM)
   void stop();                                           // frenar y cancelar
   void emergency();                                      // frenar y quitar EN de inmediato
+  void release();                                        // frenar un instante y quitar EN (fin de misión)
+  bool motorsEnabled() const { return enabled_; }
   void clearFault();
 
   State state() const { return state_; }
@@ -56,7 +59,7 @@ class Motion {
   static const char *stateName(State s);
 
  private:
-  enum class Kind : uint8_t { NONE, FORWARD, TURN, OPEN_LOOP, STOP, EMERGENCY };
+  enum class Kind : uint8_t { NONE, FORWARD, TURN, OPEN_LOOP, STOP, EMERGENCY, RELEASE };
   struct Command {
     Kind kind = Kind::NONE;
     float a = 0, b = 0, c = 0;
@@ -77,6 +80,7 @@ class Motion {
   void stepBraking();
   void driveWheels(float vrefL, float vrefR, float dt);
   void brakeAll();
+  void enableMotors(bool on);
 
   Hw hw_{};
   volatile State state_ = State::IDLE;
@@ -104,5 +108,6 @@ class Motion {
   float vL_ = 0, vR_ = 0;
   float progress_ = 0;
   bool imuOk_ = false;
+  volatile bool enabled_ = false;
   WheelPI piL_, piR_;
 };

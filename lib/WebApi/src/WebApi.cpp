@@ -113,6 +113,7 @@ void stateToJson(JsonDocument &d) {
   d["v_der"] = t.vR;
   d["pwm_izq"] = t.dutyL;
   d["pwm_der"] = t.dutyR;
+  d["motores_activos"] = C.motion->motorsEnabled();
   JsonArray tk = d["cuentas"].to<JsonArray>();
   tk.add((long)t.ticksL);
   tk.add((long)t.ticksR);

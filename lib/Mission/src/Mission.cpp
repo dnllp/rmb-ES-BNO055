@@ -238,7 +238,7 @@ void Mission::emergencyStop() {
 }
 
 void Mission::fail(const char *msg) {
-  motion_->stop();
+  motion_->release();  // freno y EN en bajo
   poseValid_ = false;
   testMode_ = false;
   message_ = msg;
@@ -377,6 +377,7 @@ void Mission::finishStep() {
   idx_++;
   stepStarted_ = false;
   if (idx_ >= n) {
+    motion_->release();  // misión terminada: freno y EN en bajo
     state_ = State::COMPLETADO;
     message_ = testMode_ ? "prueba terminada" : "mision completada";
     testMode_ = false;

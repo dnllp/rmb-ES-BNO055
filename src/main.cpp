@@ -130,10 +130,8 @@ static void telemetryTask(void *) {
 // ---------------------------------------------------------------- arranque
 void setup() {
   // Primero, motores apagados (además de los pull-down de 10 kΩ en EN)
-  pinMode(PIN_L_EN, OUTPUT);
-  pinMode(PIN_R_EN, OUTPUT);
-  digitalWrite(PIN_L_EN, LOW);
-  digitalWrite(PIN_R_EN, LOW);
+  pinMode(PIN_MOTORS_EN, OUTPUT);
+  digitalWrite(PIN_MOTORS_EN, LOW);
 
   Serial.begin(115200);
   delay(100);
@@ -144,9 +142,9 @@ void setup() {
 
   gSettings.load();
 
-  motorL.begin({PIN_L_RPWM, PIN_L_LPWM, PIN_L_EN, LEDC_CH_L_R, LEDC_CH_L_L}, PWM_FREQ_HZ,
+  motorL.begin({PIN_L_RPWM, PIN_L_LPWM, LEDC_CH_L_R, LEDC_CH_L_L}, PWM_FREQ_HZ,
                PWM_BITS, LEFT_MOTOR_INVERT);
-  motorR.begin({PIN_R_RPWM, PIN_R_LPWM, PIN_R_EN, LEDC_CH_R_R, LEDC_CH_R_L}, PWM_FREQ_HZ,
+  motorR.begin({PIN_R_RPWM, PIN_R_LPWM, LEDC_CH_R_R, LEDC_CH_R_L}, PWM_FREQ_HZ,
                PWM_BITS, RIGHT_MOTOR_INVERT);
 
   if (!encL.begin(PIN_ENC_L, PCNT_UNIT_0, ENC_BOTH_EDGES, ENC_GLITCH_FILTER_NS, ENC_STOP_TIMEOUT_US))
@@ -165,7 +163,7 @@ void setup() {
   bno.update();
   bno.setYaw(0);
 
-  motion.begin({&motorL, &motorR, &encL, &encR, &bno, &pose});
+  motion.begin({&motorL, &motorR, &encL, &encR, &bno, &pose, PIN_MOTORS_EN});
   safety.begin(&motorL, &motorR, &encL, &encR);
   mission.begin(&motion, &pose, &bno);
   mission.onPlanReady([] { planReady = true; });

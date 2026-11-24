@@ -108,6 +108,7 @@ La barra espaciadora en la página también manda PARO.
 | Pérdida de latido (2 s) | «el robot frena» | Paro (freno + EN en bajo) → INACTIVO; se puede desactivar en Ajustes | Más seguro que reanudar solo |
 | Ejecutar con metas inalcanzables | «pide confirmar» | La web pregunta; la API exige `{"confirmar": true}` | |
 | Pruebas de primitivas | Plan de pruebas | Ruta extra `POST /api/prueba` (avanzar, girar, PWM) y botones en la web | Para las 20 repeticiones sin escribir un plan |
+| EN de los puentes | Un EN por motor (GPIO 27 y 13) | **Un solo EN en GPIO 4** para los dos BTS7960 | Así está cableado. EN alto solo durante una misión o prueba; al terminar, en una falla o en un paro se frena 20 ms y EN pasa a bajo. La velocidad va por PWM en RPWM/LPWM |
 | Corriente IS, batería y zumbador | GPIO 36, 39, 32 y 33 | **No se usan por ahora** (quitados del código) | Decisión tuya del 23-nov. El atasco se detecta solo con el encoder |
 | Ajustes en NVS | — | `include/roomba_settings.h` (no estaba en la lista de carpetas) | Lo usan Motion, Safety y la web |
 | Versión de la plataforma | Sin fijar | `espressif32@6.9.0` (Arduino-ESP32 2.0.17) | Builds reproducibles; usa el driver PCNT clásico |
@@ -145,7 +146,7 @@ curl -X POST http://192.168.4.1/api/paro
 | GET, POST /api/plan | `{algoritmo, heuristica?, inicio, orientacion, metas, regresar, obstaculos?}`; el resultado llega por `/ws` o con GET |
 | POST /api/ejecutar | `{confirmar?: true}` |
 | POST /api/pausa | Pausa al terminar la primitiva en curso, o reanuda |
-| POST /api/paro | Freno activo y EN en bajo |
+| POST /api/paro | Freno activo y EN (GPIO 4) en bajo |
 | POST /api/imu/calibrar | Calibrar y guardar offsets |
 | POST /api/imu/cero | `{celda:[f,c], orientacion:"E"}`: coloca el robot y toma ese rumbo como referencia |
 | GET, POST /api/config | Ganancias, velocidades, c_g; `{restablecer:true}` vuelve a `roomba_config.h` |

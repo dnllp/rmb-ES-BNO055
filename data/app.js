@@ -368,7 +368,7 @@ function onTelemetry(t) {
   $('tXY').textContent = `${fmt(t.x)} m, ${fmt(t.y)} m`;
   $('tTh').textContent = fmt(t.theta, 1) + '°';
   $('tCelda').textContent = t.celda ? `f${t.celda[0]} c${t.celda[1]}` : '—';
-  $('tMov').textContent = t.movimiento;
+  $('tMov').textContent = t.movimiento + (t.motores_activos ? ' · EN alto' : ' · EN bajo');
   $('tV').textContent = `${fmt(t.v_izq)} / ${fmt(t.v_der)} m/s`;
   $('tTicks').textContent = t.cuentas ? t.cuentas.join(' / ') : '—';
   $('tSlip').textContent = `${t.deslizamientos} · frenado ${fmt(t.dist_frenado_mm, 1)} mm`;
